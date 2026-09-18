@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 const NAV = [
   { label: "Dashboard", href: "/fund", icon: "home" },
+  { label: "My Account", href: "/fund/account", icon: "user" },
   { label: "Members", href: "/fund/members", icon: "users" },
   { label: "Contributions", href: "/fund/contributions", icon: "wallet" },
   { label: "Loans", href: "/fund/loans", icon: "file" },
@@ -14,6 +15,7 @@ const NAV = [
 function NavIcon({ name }: { name: string }) {
   const paths: Record<string, string> = {
     home: "M3 11l9-8 9 8M5 10v10h14V10",
+    user: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0",
     users:
       "M16 11a4 4 0 100-8 4 4 0 000 8zM8 11a4 4 0 100-8 4 4 0 000 8zM2 21v-2a4 4 0 014-4h1M14 21v-2a4 4 0 014-4h1a4 4 0 014 4v2",
     wallet: "M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM16 12h.01",
@@ -28,7 +30,7 @@ function NavIcon({ name }: { name: string }) {
   );
 }
 
-export function SidebarNav() {
+export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
@@ -39,6 +41,7 @@ export function SidebarNav() {
           <a
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
               active ? "bg-[#2F5FD0] text-white" : "text-white/55 hover:bg-white/5 hover:text-white"
             }`}
