@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireFundManager } from "@/lib/auth/require-fund-manager";
 
 export async function GET() {
   const supabase = createClient();
@@ -13,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = await requireAdmin();
+  const authError = await requireFundManager();
   if (authError) return authError;
 
   const body = await req.json().catch(() => null);
