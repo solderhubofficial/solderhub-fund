@@ -30,13 +30,13 @@ export default async function MembersPage() {
                 Joined {formatDate(m.joined_on)}
               </span>
             </span>
-            <span className="text-right">
+            <span className="hidden text-right sm:block">
               <span className="block text-[#101828]/60">Contributed</span>
               <span className="block font-medium tabular-nums text-[#101828]">
                 {formatINR(m.total_contribution)}
               </span>
             </span>
-            <span className="text-right">
+            <span className="hidden text-right sm:block">
               <span className="block text-[#101828]/60">Outstanding loan</span>
               <span className="block font-medium tabular-nums text-[#101828]">
                 {formatINR(m.outstanding_loan)}
