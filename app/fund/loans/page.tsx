@@ -15,8 +15,8 @@ export default async function LoansPage() {
         1% monthly interest on outstanding principal · no mandatory monthly repayment
       </p>
 
-      <div className="mt-5 overflow-hidden rounded-2xl bg-white shadow-sm">
-        <table className="w-full text-sm">
+      <div className="mt-5 overflow-x-auto rounded-2xl bg-white shadow-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-[#F0F1F5] text-left text-xs text-[#101828]/45">
               <th className="px-5 py-3 font-medium">Member</th>
