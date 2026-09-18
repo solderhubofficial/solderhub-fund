@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMemberBySlug, getMemberSummaryById, getMemberHistory } from "@/lib/fund/queries";
-import { formatINR, formatDate } from "@/lib/format";
+import {
+  getMemberBySlug,
+  getMemberSummaryById,
+  getMemberHistory,
+  getPaymentDueInfo,
+} from "@/lib/fund/queries";
+import { formatINR, formatDate, formatMonth } from "@/lib/format";
+import { createClient } from "@/lib/supabase/server";
+import { getUnifiedRole, isFundManager } from "@/lib/auth/roles";
 import { NewTransactionForm } from "./new-transaction-form";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +25,19 @@ export default async function MemberPage({ params }: { params: { slug: string } 
   const member = await getMemberBySlug(params.slug);
   if (!member) notFound();
 
-  const [summary, history] = await Promise.all([
+  const [summary, history, due] = await Promise.all([
     getMemberSummaryById(member.id),
     getMemberHistory(member.id),
+    getPaymentDueInfo(member.id),
   ]);
 
   const loanOutstanding = summary?.outstanding_loan ?? 0;
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const canWrite = user ? isFundManager(await getUnifiedRole(supabase, user.id)) : false;
 
   // Note: this page renders inside app/fund/layout.tsx (Next.js nested
   // layout resolves /fund/[slug] under /fund automatically), so it must
@@ -57,8 +71,37 @@ export default async function MemberPage({ params }: { params: { slug: string } 
         )}
       </section>
 
-      <h2 className="mt-8 mb-2 font-['Fraunces',serif] text-lg text-[#101828]">New entry</h2>
-      <NewTransactionForm memberId={member.id} />
+      <section className="mt-4 flex items-center justify-between rounded-2xl bg-white px-5 py-4 shadow-sm">
+        <div>
+          <p className="text-sm text-[#101828]/50">
+            {due.isCurrentMonthSettled ? "Next minimum payment" : "Minimum payment due"}
+          </p>
+          <p className="mt-0.5 font-['Fraunces',serif] text-2xl text-[#101828]">
+            {formatINR(due.dueAmount)}
+          </p>
+          <p className="mt-0.5 text-xs text-[#101828]/45">for {formatMonth(due.dueMonth)}</p>
+        </div>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            due.isCurrentMonthSettled
+              ? "bg-[#EAF7EF] text-[#2F7A5C]"
+              : "bg-[#FBEFE6] text-[#C98A2B]"
+          }`}
+        >
+          {due.isCurrentMonthSettled ? "This month settled" : "Not yet paid"}
+        </span>
+      </section>
+
+      {canWrite ? (
+        <>
+          <h2 className="mt-8 mb-2 font-['Fraunces',serif] text-lg text-[#101828]">New entry</h2>
+          <NewTransactionForm memberId={member.id} />
+        </>
+      ) : (
+        <p className="mt-8 rounded-2xl bg-white px-4 py-3.5 text-sm text-[#101828]/50 shadow-sm">
+          You have view-only fund access. Ask a Fund Manager to log new entries.
+        </p>
+      )}
 
       <h2 className="mt-9 mb-2 font-['Fraunces',serif] text-lg text-[#101828]">History</h2>
       <div className="divide-y divide-[#E4E7EC] rounded-2xl bg-white shadow-sm">
