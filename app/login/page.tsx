@@ -39,7 +39,7 @@ export default function LoginPage() {
             <p className="font-['Fraunces',serif] text-lg leading-tight text-[#101828]">
               Solderhub Fund
             </p>
-            <p className="text-xs text-[#101828]/50">Sign in to your account</p>
+            <p className="text-xs text-[#101828]/50">Sign in with your Solderhub account</p>
           </div>
         </div>
 
