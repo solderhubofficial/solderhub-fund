@@ -85,7 +85,68 @@ export async function getMemberSummaryById(
   return data as MemberSummary | null;
 }
 
-/** Combined, date-sorted history for one member: contributions + loan moves. */
+export async function getMemberByUserId(userId: string): Promise<Member | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("members")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data as Member | null;
+}
+
+export type PaymentDueInfo = {
+  monthlyAmount: number;
+  currentMonthPaid: number;
+  isCurrentMonthSettled: boolean;
+  /** Month (first-of-month date string) the "next minimum payment" applies to —
+   * the current month if it's still unpaid/short, otherwise next month. */
+  dueMonth: string;
+  dueAmount: number;
+};
+
+/** This member's next minimum payment: what's left for the current month if
+ * it isn't fully paid yet, otherwise next month's standard contribution. */
+export async function getPaymentDueInfo(memberId: string): Promise<PaymentDueInfo> {
+  const supabase = createClient();
+  const settings = await getSettings();
+  const now = new Date();
+  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
+
+  const { data, error } = await supabase
+    .from("monthly_contributions")
+    .select("contribution")
+    .eq("member_id", memberId)
+    .eq("month", currentMonth)
+    .maybeSingle();
+  if (error) throw error;
+
+  const currentMonthPaid = Number(data?.contribution ?? 0);
+  const isCurrentMonthSettled = currentMonthPaid >= settings.monthly_contribution;
+
+  if (isCurrentMonthSettled) {
+    const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const dueMonth = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-01`;
+    return {
+      monthlyAmount: settings.monthly_contribution,
+      currentMonthPaid,
+      isCurrentMonthSettled: true,
+      dueMonth,
+      dueAmount: settings.monthly_contribution,
+    };
+  }
+
+  return {
+    monthlyAmount: settings.monthly_contribution,
+    currentMonthPaid,
+    isCurrentMonthSettled: false,
+    dueMonth: currentMonth,
+    dueAmount: settings.monthly_contribution - currentMonthPaid,
+  };
+}
+
+
 export async function getMemberHistory(memberId: string) {
   const supabase = createClient();
   const [{ data: contributions, error: e1 }, { data: loans, error: e2 }] =
