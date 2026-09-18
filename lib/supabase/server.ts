@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+// Same shared-domain cookie as lib/supabase/client.ts — see the comment
+// there. Both must match or the session won't be visible on both sides.
+const cookieDomain = process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN;
+
 export function createClient() {
   const cookieStore = cookies();
 
@@ -8,6 +12,7 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: cookieDomain ? { domain: cookieDomain } : undefined,
       cookies: {
         getAll() {
           return cookieStore.getAll();
