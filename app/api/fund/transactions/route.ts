@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireFundManager } from "@/lib/auth/require-fund-manager";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const denied = await requireAdmin();
+  const denied = await requireFundManager();
   if (denied) return denied;
 
   const body = await request.json();
