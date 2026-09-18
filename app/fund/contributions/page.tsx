@@ -20,8 +20,8 @@ export default async function ContributionsPage() {
         Most recent 100 monthly entries across all members
       </p>
 
-      <div className="mt-5 overflow-hidden rounded-2xl bg-white shadow-sm">
-        <table className="w-full text-sm">
+      <div className="mt-5 overflow-x-auto rounded-2xl bg-white shadow-sm">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-[#F0F1F5] text-left text-xs text-[#101828]/45">
               <th className="px-5 py-3 font-medium">Member</th>
